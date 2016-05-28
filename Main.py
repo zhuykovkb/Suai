@@ -17,44 +17,44 @@ def log(message, answer):
     print(answer)
 
 
-@bot.message_handler(commands=['wk'])
+@bot.message_handler(commands=[Constaints.Week[0]])
 def handleText(message):
-    group = message.text.split('/wk')[1][1:]
+    group = message.text.split(Constaints.Week[1])[1][1:]
     answer = RaspParse.GetWeekRasp(group)
     log(message, answer)
 
     bot.send_message(message.from_user.id, answer)
 
 
-@bot.message_handler(commands=['td'])
+@bot.message_handler(commands=[Constaints.Today[0]])
 def handleText(message):
-    group = message.text.split('/td')[1][1:]
+    group = message.text.split(Constaints.Today[1])[1][1:]
     answer = RaspParse.GetTodayRasp(group)
     log(message, answer)
 
     bot.send_message(message.from_user.id, answer)
 
 
-@bot.message_handler(commands=['tm'])
+@bot.message_handler(commands=[Constaints.Tomorrow[0]])
 def handleText(message):
-    group = message.text.split('/tm')[1][1:]
+    group = message.text.split(Constaints.Tomorrow[1])[1][1:]
     answer = RaspParse.GetTomorrowRasp(group)
     log(message, answer)
 
     bot.send_message(message.from_user.id, answer)
 
 
-@bot.message_handler(commands=['parity'])
+@bot.message_handler(commands=[Constaints.Parity])
 def handleText(message):
-    answer = RaspParse.GetPairty()
+    answer = RaspParse.GetParity()
     log(message, answer)
 
     bot.send_message(message.from_user.id, answer)
 
 
-@bot.message_handler(commands=['tch'])
+@bot.message_handler(commands=[Constaints.Teacher[0]])
 def handleText(message):
-    tch = message.text.split('/tch')[1][1:]
+    tch = message.text.split(Constaints.Teacher[1])[1][1:]
     answer = RaspParse.GetTeacherID(tch)
     log(message, answer)
 
@@ -63,7 +63,7 @@ def handleText(message):
 
 @bot.message_handler(commands=['start'])
 def handleText(message):
-    answer = "Комманд здесь по сути нет, достаточно ввести номер своей группы. Если есть буквы, просто пишем слитно. На регистр похуй"
+    answer = Constaints.StartAnswer
     log(message, answer)
 
     bot.send_message(message.from_user.id, answer)

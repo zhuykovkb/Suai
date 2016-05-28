@@ -9,8 +9,6 @@ addressPattern = 'http://rasp.guap.ru/?{0}={1}'
 r = requests.get("http://rasp.guap.ru/")
 soup = BeautifulSoup(r.content)
 
-pairty = ''
-
 db = []
 
 groups = {}
@@ -57,15 +55,14 @@ def GetTeacherID(teacher):
 
 
 # Получить четность недели
-def GetPairty():
-    pairty = soup.find('em').text
-    return pairty
+def GetParity():
+    return soup.find('em').text
 
 
 # Получить расписание на неделю
 def GetWeekRasp(groupName):
     if groupName == '':
-        return 'Запрос пуст\nФормат запроса: /group 0000'
+        return Constaints.WrongRequestAnswer.format('wk')
 
     groupId = GetGroupID(groupName)
     if groupId == '-1':
@@ -94,7 +91,7 @@ def GetWeekRasp(groupName):
 # Получить расписание на сегодня
 def GetTodayRasp(groupName):
     if groupName == '':
-        return 'Запрос пуст\nФормат запроса: /group 0000'
+        return Constaints.WrongRequestAnswer.format('td')
 
     groupId = GetGroupID(groupName)
     if groupId == '-1':
@@ -131,7 +128,7 @@ def GetTodayRasp(groupName):
 # Получить расписание на завтра
 def GetTomorrowRasp(groupName):
     if groupName == '':
-        return 'Запрос пуст\nФормат запроса: /group 0000'
+        return Constaints.WrongRequestAnswer.format('tm')
 
     groupId = GetGroupID(groupName)
     if groupId == '-1':
