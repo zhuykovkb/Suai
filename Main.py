@@ -1,7 +1,9 @@
 import telebot
+
 import Constaints
 import RaspParse
 
+types = telebot.types
 bot = telebot.TeleBot(Constaints.token)
 print(bot.get_me())
 
@@ -71,22 +73,22 @@ def handleText(message):
 
 @bot.message_handler(commands=['help'])
 def handleText(message):
-    answer = "Помощи хочешь? - Нахуй иди!"
+    answer = Constaints.HelpAnswer
     log(message, answer)
 
     bot.send_message(message.from_user.id, answer)
+
+
+@bot.message_handler(content_types=["text"])
+def handleText(message):
+    answer = Constaints.WrongCommonText
+    bot.send_message(message.from_user.id, answer)
+    log(message, answer)
 
 
 @bot.message_handler(content_types=["commands"])
 def handleCommand(message):
     print("Пришла комманда")
-
-
-@bot.message_handler(content_types=["text"])
-def handleText(message):
-    answer = 'no'
-    bot.send_message(message.from_user.id, answer)
-    log(message, answer)
 
 
 @bot.message_handler(content_types=["document"])
