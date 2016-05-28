@@ -123,7 +123,7 @@ def GetTodayRasp(groupName):
             break
 
     if len(result) == 0:
-        result.append('\n{0}\n'.format('Расписания нет'))
+        result.append('\n{0}\n'.format('Выходной'))
 
     return '\n'.join(result)
 
@@ -142,7 +142,7 @@ def GetTomorrowRasp(groupName):
     days = GetFullRaspForGroup.Get(groupId)
     result = []
 
-    wkind = datetime.date.today().weekday() + 1;
+    wkind = datetime.date.today().weekday() + 1
     if wkind > 5:
         wkind = 0
 
@@ -163,6 +163,6 @@ def GetTomorrowRasp(groupName):
             break
 
     if len(result) == 0:
-        result.append('\nНа {0} {1}\n'.format(datetime.date.today(), 'Расписания нет'))
+        result.append('\nНа {0} {1}\n'.format(datetime.date.today(), 'Выходной'))
 
     return '\n'.join(result)

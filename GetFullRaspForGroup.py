@@ -25,14 +25,17 @@ def Get(groupId):
 
     days = []
     for i in raspData:
+        # День недели
         if i.name == 'h3':
             days.append(Day())
             days[-1].day = i.text
 
+        # Время
         elif i.name == 'h4':
             days[-1].shdl.append(Shedule())
-            days[-1].shdl[-1].time = i.text
+            days[-1].shdl[-1].time = '>> {0}'.format(i.text)
 
+        # Пары
         else:
             for span in i.find_all('span'):
                 if span.get('class'):
