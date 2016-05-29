@@ -1,4 +1,8 @@
+import datetime
+import random
+
 import telebot
+import urllib.request as urllib2
 
 import Constaints
 import RaspParse
@@ -24,7 +28,6 @@ def handleText(message):
     group = message.text.split(Constaints.Week[1])[1][1:]
     answer = RaspParse.GetWeekRasp(group)
     log(message, answer)
-
     bot.send_message(message.from_user.id, answer)
 
 
@@ -33,7 +36,6 @@ def handleText(message):
     group = message.text.split(Constaints.Today[1])[1][1:]
     answer = RaspParse.GetTodayRasp(group)
     log(message, answer)
-
     bot.send_message(message.from_user.id, answer)
 
 
@@ -42,7 +44,6 @@ def handleText(message):
     group = message.text.split(Constaints.Tomorrow[1])[1][1:]
     answer = RaspParse.GetTomorrowRasp(group)
     log(message, answer)
-
     bot.send_message(message.from_user.id, answer)
 
 
@@ -50,7 +51,6 @@ def handleText(message):
 def handleText(message):
     answer = RaspParse.GetParity()
     log(message, answer)
-
     bot.send_message(message.from_user.id, answer)
 
 
@@ -59,15 +59,13 @@ def handleText(message):
     tch = message.text.split(Constaints.Teacher[1])[1][1:]
     answer = RaspParse.GetTeacherID(tch)
     log(message, answer)
-
     bot.send_message(message.from_user.id, answer)
 
 
 @bot.message_handler(commands=['start'])
-def handleText(message):
+def handle_start(message):
     answer = Constaints.StartAnswer
     log(message, answer)
-
     bot.send_message(message.from_user.id, answer)
 
 
@@ -75,40 +73,28 @@ def handleText(message):
 def handleText(message):
     answer = Constaints.HelpAnswer
     log(message, answer)
-
     bot.send_message(message.from_user.id, answer)
 
 
-@bot.message_handler(content_types=["text"])
+@bot.message_handler(content_types=['text'])
 def handleText(message):
+    url = 'https://pp.vk.me/c631925/v631925802/2492/l7IqI7KdW6g.jpg'
+    urllib2.urlretrieve(url, 'sorryCat.jpg')
+    img = open('sorryCat.jpg', 'rb')
+
+    random.seed()
+    rndFact = Constaints.Facts[random.randint(0, len(Constaints.Facts) - 1)]
+
+    bot.send_chat_action(message.from_user.id, 'upload_photo')
+    bot.send_photo(message.from_user.id, img, rndFact)
+    img.close()
+
+    log(message, rndFact)
+
+"""
     answer = Constaints.WrongCommonText
-    bot.send_message(message.from_user.id, answer)
     log(message, answer)
+    bot.send_message(message.from_user.id, answer)
 
-
-@bot.message_handler(content_types=["commands"])
-def handleCommand(message):
-    print("Пришла комманда")
-
-
-@bot.message_handler(content_types=["document"])
-def handleDoc(message):
-    print("Пришел документ")
-
-
-@bot.message_handler(content_types=["audio"])
-def handleAudio(message):
-    print("Пришло аудио")
-
-
-@bot.message_handler(content_types=["photo"])
-def handlePhoto(message):
-    print("Пришло фото")
-
-
-@bot.message_handler(content_types=["sticker"])
-def handleSticker(message):
-    print("Пришел стикер")
-
-
+"""
 bot.polling(none_stop=True, interval=0)
