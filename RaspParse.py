@@ -1,35 +1,44 @@
-import requests
 import datetime
-import GetFullRaspForGroup
+import requests
 import Constaints
+
 from bs4 import BeautifulSoup
+from GetFullRasp import GetFullRaspForGroup
+from GetFullRasp import GetFullRaspForTeacher
 
-addressPattern = 'http://rasp.guap.ru/?{0}={1}'
-
-r = requests.get("http://rasp.guap.ru/")
-soup = BeautifulSoup(r.content)
 
 db = []
 
-groups = {}
-teachers = {}
-build = {}
-rooms = {}
 
-db.append(groups)
-db.append(teachers)
-db.append(build)
-db.append(rooms)
+def UpdatesAllIDs():
+    r = requests.get("http://rasp.guap.ru/")
+    soup = BeautifulSoup(r.content, "html.parser")
 
-i = 0
-for row in soup.find_all('select'):
-    for opt in row.find_all('option'):
-        db[i][opt.text.upper()] = opt.get('value')
-    i += 1
+    res = []
+
+    groups = {}
+    teachers = {}
+    build = {}
+    rooms = {}
+
+    res.append(groups)
+    res.append(teachers)
+    res.append(build)
+    res.append(rooms)
+
+    i = 0
+    for row in soup.find_all('select'):
+        for opt in row.find_all('option'):
+            res[i][opt.text.upper()] = opt.get('value')
+        i += 1
+
+    return res
 
 
 # Получить ID группы
 def GetGroupID(group):
+    db = UpdatesAllIDs()
+
     for gItem in db[0]:
         if gItem.find(group.upper()) >= 0:
             try:
@@ -41,21 +50,43 @@ def GetGroupID(group):
 
 # Получить ID препода
 def GetTeacherID(teacher):
+    db = UpdatesAllIDs()
+
     if teacher == '':
         return 'Запрос пуст\nФормат запроса: /tch фамилия'
 
+    # Ищем препода по фамиилии
     for tItem in db[1]:
         if tItem.find(teacher.upper()) >= 0:
-            try:
-                return addressPattern.format('Препод', tItem, 'p', db[1][tItem])
-            except:
-                return 'Error: {0}; sName: {1}'.format('GetTeacherID', tItem)
+            days = GetFullRaspForTeacher.Get(db[1].get(tItem))
+            break
 
-    return 'Неудается найти "{0}" :('.format(teacher.upper())
+    # Ситуация если препода не нашли - выходим
+    if not days:
+        return 'Неудается найти "{0}" :('.format(teacher.upper())
+
+    # Соответственно вывод инфармации о расписании если препод нашелся
+    result = [tItem]
+    for day in days:
+        result.append('••••••••••')
+        result.append(day.day)
+        result.append('••••••••••')
+        for schedule in day.schedule:
+            result.append(schedule.time)
+            for pair in schedule.pair:
+                if pair != schedule.pair[-1]:
+                    result.append(pair)
+                else:
+                    result.append('{0}\n'.format(pair))
+
+    return '\n'.join(result)
 
 
 # Получить четность недели
 def GetParity():
+    r = requests.get("http://rasp.guap.ru/")
+    soup = BeautifulSoup(r.content, "html.parser")
+
     return soup.find('em').text
 
 
@@ -74,13 +105,15 @@ def GetWeekRasp(groupName):
     result = []
 
     for day in days:
-        result.append('••••••••••')
+        dots = MakeDotsByLen(day.day)
+
+        result.append(dots)
         result.append(day.day)
-        result.append('••••••••••')
-        for shedule in day.shdl:
-            result.append(shedule.time)
-            for pair in shedule.pair:
-                if pair != shedule.pair[-1]:
+        result.append(dots)
+        for schedule in day.schedule:
+            result.append(schedule.time)
+            for pair in schedule.pair:
+                if pair != schedule.pair[-1]:
                     result.append(pair)
                 else:
                     result.append('{0}\n'.format(pair))
@@ -102,18 +135,23 @@ def GetTodayRasp(groupName):
     days = GetFullRaspForGroup.Get(groupId)
     result = []
 
+    # получаю индекс дня недели
     wkind = datetime.date.today().weekday()
+
+    # устанавливаю текущий день недели
     currentDay = Constaints.Weeks[wkind]
 
     for day in days:
         if day.day.upper() == currentDay.upper():
-            result.append('••••••••••')
+            dots = MakeDotsByLen(day.day)
+
+            result.append(dots)
             result.append(day.day)
-            result.append('••••••••••')
-            for shedule in day.shdl:
-                result.append(shedule.time)
-                for pair in shedule.pair:
-                    if pair != shedule.pair[-1]:
+            result.append(dots)
+            for schedule in day.schedule:
+                result.append(schedule.time)
+                for pair in schedule.pair:
+                    if pair != schedule.pair[-1]:
                         result.append(pair)
                     else:
                         result.append('{0}\n'.format(pair))
@@ -139,7 +177,12 @@ def GetTomorrowRasp(groupName):
     days = GetFullRaspForGroup.Get(groupId)
     result = []
 
+    # получаю индекс завтрашнего дня недели
     wkind = datetime.date.today().weekday() + 1
+
+    # проверка на границу недели с тем исключением, что
+    # в случае запроса в Субботу, результат вернется не на
+    # Воскрсенье, а в Понедельник
     if wkind > 5:
         wkind = 0
 
@@ -147,13 +190,15 @@ def GetTomorrowRasp(groupName):
 
     for day in days:
         if day.day.upper() == currentDay.upper():
-            result.append('••••••••••')
+            dots = MakeDotsByLen(day.day)
+
+            result.append(dots)
             result.append(day.day)
-            result.append('••••••••••')
-            for shedule in day.shdl:
-                result.append(shedule.time)
-                for pair in shedule.pair:
-                    if pair != shedule.pair[-1]:
+            result.append(dots)
+            for schedule in day.shdl:
+                result.append(schedule.time)
+                for pair in schedule.pair:
+                    if pair != schedule.pair[-1]:
                         result.append(pair)
                     else:
                         result.append('{0}\n'.format(pair))
@@ -163,3 +208,11 @@ def GetTomorrowRasp(groupName):
         result.append('\nНа {0} {1}\n'.format(datetime.date.today(), 'Выходной'))
 
     return '\n'.join(result)
+
+
+# Нужное количество точек
+def MakeDotsByLen(text):
+    str = ''
+    for i in text:
+        str += '●'
+    return str

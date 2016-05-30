@@ -1,6 +1,4 @@
-import datetime
 import random
-
 import telebot
 import urllib.request as urllib2
 
@@ -28,6 +26,8 @@ def handleText(message):
     group = message.text.split(Constaints.Week[1])[1][1:]
     answer = RaspParse.GetWeekRasp(group)
     log(message, answer)
+
+    bot.send_chat_action(message.from_user.id, 'typing')
     bot.send_message(message.from_user.id, answer)
 
 
@@ -36,6 +36,8 @@ def handleText(message):
     group = message.text.split(Constaints.Today[1])[1][1:]
     answer = RaspParse.GetTodayRasp(group)
     log(message, answer)
+
+    bot.send_chat_action(message.from_user.id, 'typing')
     bot.send_message(message.from_user.id, answer)
 
 
@@ -44,6 +46,8 @@ def handleText(message):
     group = message.text.split(Constaints.Tomorrow[1])[1][1:]
     answer = RaspParse.GetTomorrowRasp(group)
     log(message, answer)
+
+    bot.send_chat_action(message.from_user.id, 'typing')
     bot.send_message(message.from_user.id, answer)
 
 
@@ -51,6 +55,8 @@ def handleText(message):
 def handleText(message):
     answer = RaspParse.GetParity()
     log(message, answer)
+
+    bot.send_chat_action(message.from_user.id, 'typing')
     bot.send_message(message.from_user.id, answer)
 
 
@@ -59,6 +65,8 @@ def handleText(message):
     tch = message.text.split(Constaints.Teacher[1])[1][1:]
     answer = RaspParse.GetTeacherID(tch)
     log(message, answer)
+
+    bot.send_chat_action(message.from_user.id, 'typing')
     bot.send_message(message.from_user.id, answer)
 
 
@@ -66,6 +74,8 @@ def handleText(message):
 def handle_start(message):
     answer = Constaints.StartAnswer
     log(message, answer)
+
+    bot.send_chat_action(message.from_user.id, 'typing')
     bot.send_message(message.from_user.id, answer)
 
 
@@ -73,6 +83,8 @@ def handle_start(message):
 def handleText(message):
     answer = Constaints.HelpAnswer
     log(message, answer)
+
+    bot.send_chat_action(message.from_user.id, 'typing')
     bot.send_message(message.from_user.id, answer)
 
 
@@ -91,10 +103,5 @@ def handleText(message):
 
     log(message, rndFact)
 
-"""
-    answer = Constaints.WrongCommonText
-    log(message, answer)
-    bot.send_message(message.from_user.id, answer)
 
-"""
 bot.polling(none_stop=True, interval=0)
