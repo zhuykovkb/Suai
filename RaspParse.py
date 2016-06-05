@@ -1,4 +1,7 @@
+# -*- coding: utf-8 -*-
+
 import datetime
+
 import requests
 import Constaints
 
@@ -6,9 +9,7 @@ from bs4 import BeautifulSoup
 from GetFullRasp import GetFullRaspForGroup
 from GetFullRasp import GetFullRaspForTeacher
 
-
 db = []
-
 
 def UpdatesAllIDs():
     r = requests.get("http://rasp.guap.ru/")
@@ -49,7 +50,7 @@ def GetGroupID(group):
 
 
 # Получить ID препода
-def GetTeacherID(teacher):
+def GetTeacherRasp(teacher):
     db = UpdatesAllIDs()
 
     if teacher == '':
@@ -130,7 +131,7 @@ def GetTodayRasp(groupName):
     if groupId == '-1':
         return 'Ошибка -1'
     elif groupId == '-2':
-        return 'Ошибка -2'
+        return Constaints.WrongGroup
 
     days = GetFullRaspForGroup.Get(groupId)
     result = []
@@ -195,7 +196,7 @@ def GetTomorrowRasp(groupName):
             result.append(dots)
             result.append(day.day)
             result.append(dots)
-            for schedule in day.shdl:
+            for schedule in day.schedule:
                 result.append(schedule.time)
                 for pair in schedule.pair:
                     if pair != schedule.pair[-1]:

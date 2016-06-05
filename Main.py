@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
+
 import random
 import telebot
-import urllib.request as urllib2
 
 import Constaints
 import RaspParse
@@ -14,10 +15,10 @@ def log(message, answer):
     print("\n ::::::::::")
     from datetime import datetime
     print((datetime.now()))
-    print("Сообщение от {0} {1}. (id = {2})\nТекст - {3}".format(message.from_user.first_name,
-                                                                 message.from_user.last_name,
-                                                                 str(message.from_user.id),
-                                                                 message.text))
+    print('Сообщение от {0} {1}. (id = {2})\nТекст - {3}'.format(message.from_user.first_name,
+                                                                  message.from_user.last_name,
+                                                                  str(message.from_user.id),
+                                                                  message.text))
     print(answer)
 
 
@@ -63,7 +64,7 @@ def handleText(message):
 @bot.message_handler(commands=[Constaints.Teacher[0]])
 def handleText(message):
     tch = message.text.split(Constaints.Teacher[1])[1][1:]
-    answer = RaspParse.GetTeacherID(tch)
+    answer = RaspParse.GetTeacherRasp(tch)
     log(message, answer)
 
     bot.send_chat_action(message.from_user.id, 'typing')
@@ -90,12 +91,10 @@ def handleText(message):
 
 @bot.message_handler(content_types=['text'])
 def handleText(message):
-    url = 'https://pp.vk.me/c631925/v631925802/2492/l7IqI7KdW6g.jpg'
-    urllib2.urlretrieve(url, 'sorryCat.jpg')
-    img = open('sorryCat.jpg', 'rb')
-
     random.seed()
     rndFact = Constaints.Facts[random.randint(0, len(Constaints.Facts) - 1)]
+    rndCat = Constaints.Cats[random.randint(0, Constaints.CatsSize - 1)]
+    img = open(Constaints.ProjectPath + '/TelegramBot/Cats/' + rndCat, 'rb')
 
     bot.send_chat_action(message.from_user.id, 'upload_photo')
     bot.send_photo(message.from_user.id, img, rndFact)
