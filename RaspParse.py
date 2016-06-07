@@ -38,6 +38,10 @@ def UpdatesAllIDs():
 
 # Получить ID группы
 def GetGroupID(group):
+
+    if group == '':
+        return False
+
     db = UpdatesAllIDs()
 
     for gItem in db[0]:
@@ -45,12 +49,13 @@ def GetGroupID(group):
             try:
                 return db[0][gItem]
             except:
-                return '-1'
-    return '-2'
+                return False
+    return False
 
 
 # Получить ID препода
 def GetTeacherRasp(teacher):
+    days = []
     db = UpdatesAllIDs()
 
     if teacher == '':

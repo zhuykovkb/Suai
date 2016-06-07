@@ -5,6 +5,7 @@ import telebot
 
 import Constaints
 import RaspParse
+import Database
 
 types = telebot.types
 bot = telebot.TeleBot(Constaints.token)
@@ -16,91 +17,110 @@ def log(message, answer):
     from datetime import datetime
     print((datetime.now()))
     print('Сообщение от {0} {1}. (id = {2})\nТекст - {3}'.format(message.from_user.first_name,
-                                                                  message.from_user.last_name,
-                                                                  str(message.from_user.id),
-                                                                  message.text))
+                                                                 message.from_user.last_name,
+                                                                 str(message.from_user.id),
+                                                                 message.text))
     print(answer)
 
 
-@bot.message_handler(commands=[Constaints.Week[0]])
-def handleText(message):
-    group = message.text.split(Constaints.Week[1])[1][1:]
-    answer = RaspParse.GetWeekRasp(group)
-    log(message, answer)
-
-    bot.send_chat_action(message.from_user.id, 'typing')
-    bot.send_message(message.from_user.id, answer)
+Database.DeleteAllRecords()
 
 
-@bot.message_handler(commands=[Constaints.Today[0]])
-def handleText(message):
-    group = message.text.split(Constaints.Today[1])[1][1:]
-    answer = RaspParse.GetTodayRasp(group)
-    log(message, answer)
+def GetUserKeyboard():
+    UserKeyboard = telebot.types.ReplyKeyboardMarkup(True, False)
+    UserKeyboard.row('Сегодня', 'Завтра', 'Неделя')
+    UserKeyboard.row('Чётность недели', 'Выход')
 
-    bot.send_chat_action(message.from_user.id, 'typing')
-    bot.send_message(message.from_user.id, answer)
+    return UserKeyboard
 
 
-@bot.message_handler(commands=[Constaints.Tomorrow[0]])
-def handleText(message):
-    group = message.text.split(Constaints.Tomorrow[1])[1][1:]
-    answer = RaspParse.GetTomorrowRasp(group)
-    log(message, answer)
-
-    bot.send_chat_action(message.from_user.id, 'typing')
-    bot.send_message(message.from_user.id, answer)
+def GetDefaultKeyboard():
+    return telebot.types.ReplyKeyboardHide()
 
 
-@bot.message_handler(commands=[Constaints.Parity])
-def handleText(message):
-    answer = RaspParse.GetParity()
-    log(message, answer)
+@bot.message_handler(commands=['reg'])
+def handle_reg(message):
+    try:
 
-    bot.send_chat_action(message.from_user.id, 'typing')
-    bot.send_message(message.from_user.id, answer)
+        if Database.GetStudent(message.from_user.id):
+            answer = 'Вы уже зарегистрированы'
+            return
+        else:
+            answer = bot.reply_to(message, 'В какой Вы группе?')
+            bot.register_next_step_handler(answer, enterGroupName)
+
+    except Exception as e:
+        bot.reply_to(message, 'oooops')
+
+        # group = message.text.split('/reg')[-1].strip()
+
+        # if not RaspParse.GetGroupID(group):
+        #    answer = 'Такой группы нет!'
+        #    keyboard = DefaultKeyboard
+        # else:
+        #    Database.InsertStudent(message.from_user.id, message.from_user.last_name, group)
+        #    answer = 'Вы зарегистрированы в системе!'
+        #    keyboard = UserKeyboard
+
+        # log(message, answer)
+        #
+        # bot.send_chat_action(message.from_user.id, 'typing')
+        # bot.send_message(message.from_user.id, answer, reply_markup=keyboard)
 
 
-@bot.message_handler(commands=[Constaints.Teacher[0]])
-def handleText(message):
-    tch = message.text.split(Constaints.Teacher[1])[1][1:]
-    answer = RaspParse.GetTeacherRasp(tch)
-    log(message, answer)
+def enterGroupName(message):
+    try:
 
-    bot.send_chat_action(message.from_user.id, 'typing')
-    bot.send_message(message.from_user.id, answer)
+        group = message
+        if not RaspParse.GetGroupID(group.text):
+            answer = bot.reply_to(message, 'Что-то тут не то! Так из какой Вы группы?')
+            bot.register_next_step_handler(answer, enterGroupName)
+            return
+        else:
+            Database.InsertStudent(message.from_user.id, message.from_user.last_name, group.text)
+            answer = 'Вы зарегистрированы в системе!'
 
+            bot.send_chat_action(message.from_user.id, 'typing')
+            bot.send_message(message.from_user.id, answer, reply_markup=GetUserKeyboard())
 
-@bot.message_handler(commands=['start'])
-def handle_start(message):
-    answer = Constaints.StartAnswer
-    log(message, answer)
-
-    bot.send_chat_action(message.from_user.id, 'typing')
-    bot.send_message(message.from_user.id, answer)
-
-
-@bot.message_handler(commands=['help'])
-def handleText(message):
-    answer = Constaints.HelpAnswer
-    log(message, answer)
-
-    bot.send_chat_action(message.from_user.id, 'typing')
-    bot.send_message(message.from_user.id, answer)
-
+    except Exception as e:
+        bot.reply_to(message, 'oooops')
 
 @bot.message_handler(content_types=['text'])
-def handleText(message):
-    random.seed()
-    rndFact = Constaints.Facts[random.randint(0, len(Constaints.Facts) - 1)]
-    rndCat = Constaints.Cats[random.randint(0, Constaints.CatsSize - 1)]
-    img = open(Constaints.ProjectPath + '/TelegramBot/Cats/' + rndCat, 'rb')
+def handle_text(message):
+    answer = []
+    user = Database.GetStudent(message.from_user.id)
 
-    bot.send_chat_action(message.from_user.id, 'upload_photo')
-    bot.send_photo(message.from_user.id, img, rndFact)
-    img.close()
+    if message.text == 'Сегодня':
+        answer = RaspParse.GetTodayRasp(user['group'])
+    elif message.text == 'Завтра':
+        answer = RaspParse.GetTomorrowRasp(user['group'])
+    elif message.text == 'Неделя':
+        answer = RaspParse.GetWeekRasp(user['group'])
+    elif message.text == 'Чётность недели':
+        answer = RaspParse.GetParity()
+    elif message.text == 'Выход':
+        Database.DeleteById(message.from_user.id)
+        log(message, answer)
+        bot.send_message(message.from_user.id, 'Вы успешно вышли из системы', reply_markup=GetDefaultKeyboard())
+        return
 
-    log(message, rndFact)
+    # else:
+    #     random.seed()
+    #     rndFact = Constaints.Facts[random.randint(0, len(Constaints.Facts) - 1)]
+    #     rndCat = Constaints.Cats[random.randint(0, Constaints.CatsSize - 1)]
+    #     img = open(Constaints.ProjectPath + '/TelegramBot/Cats/' + rndCat, 'rb')
+    #
+    #     bot.send_chat_action(message.from_user.id, 'upload_photo')
+    #     bot.send_photo(message.from_user.id, img, rndFact)
+    #     img.close()
+    #
+    #     log(message, rndFact)
+    #     return
+
+    log(message, answer)
+    bot.send_chat_action(message.from_user.id, 'typing')
+    bot.send_message(message.from_user.id, answer)
 
 
-bot.polling(none_stop=True, interval=0)
+bot.polling(none_stop=True)

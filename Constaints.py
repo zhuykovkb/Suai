@@ -2,17 +2,8 @@
 
 import os
 
-token = "200322611:AAGQxFQnLdV_sD0pw1qi9CnsP3vUF7OH8Q8"
+token = '200322611:AAGQxFQnLdV_sD0pw1qi9CnsP3vUF7OH8Q8'
 ProjectPath = os.path.dirname(os.path.dirname(__file__))
-
-# Комманды
-Week = ['wk', '/wk']
-Today = ['td', '/td']
-Tomorrow = ['tm', '/tm']
-Parity = 'parity'
-Teacher = ['tch', '/tch']
-Start = 'start'
-Help = 'help'
 
 # Ответы
 StartAnswer = "Команды SUAIBot:\n" \
